@@ -20,6 +20,8 @@ import userService from '../services/users';
 const user = localStorage.getItem('user');
 const auth_header = `Bearer ${user}`;
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const Settings = () => {
     const navigate = useNavigate();
     const [userInfo, setUserInfo] = useState({
@@ -99,7 +101,7 @@ const Settings = () => {
                 const data = await response.json();
                 console.log('Fetching presigned URL for file:', data);
 
-                const presigned_url = data.presigned_url.replace("minio:9000", "34.172.224.168:80");
+                const presigned_url = data.presigned_url.replace("minio:9000", API_URL.slice(7) + ":80");
                 console.log('Presigned URL:', presigned_url);
 
                 // Then, upload the file to S3 using the presigned URL

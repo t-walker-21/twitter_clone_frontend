@@ -19,6 +19,8 @@ import tweetService from '../services/tweets';
 import authService from '../services/auth';
 import userService from '../services/users';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 function TweetCard({ tweet }) {
     const navigate = useNavigate();
     const currentUser = authService.getCurrentUser();
@@ -127,7 +129,7 @@ function TweetCard({ tweet }) {
                                 <Box sx={{ mt: 2, mb: 1 }}>
                                     <CardMedia
                                         component="img"
-                                        image={'http://34.172.224.168/user-images/' + tweet.media_url}
+                                        image={API_URL + "/user-images/" + tweet.media_url}
                                         alt="Tweet image"
                                         sx={{
                                             borderRadius: 2,

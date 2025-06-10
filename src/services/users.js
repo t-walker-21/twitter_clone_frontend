@@ -5,9 +5,6 @@ const baseURL = process.env.REACT_APP_API_URL; // Replace with your local develo
 const API_URL = `${baseURL}/users`; // Adjust the endpoint as needed
 const BLOB_API_URL = `${baseURL}/user-images`; // Adjust the endpoint as needed
 
-console.log(process.env.REACT_APP_API_URL);
-console.log(API_URL);
-
 // Create axios instance with default config
 const axiosInstance = axios.create({
     baseURL: API_URL

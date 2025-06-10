@@ -19,6 +19,8 @@ import authService from '../services/auth';
 import userService from '../services/users';
 import TweetCard from '../components/TweetCard';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 function Home() {
     const [tweets, setTweets] = useState([]);
     const [newTweet, setNewTweet] = useState('');
@@ -75,7 +77,7 @@ function Home() {
             // Get a presigned URL for the image if selected
             if (selectedImage) {
                 const url_response = await userService.get_presigned_url(selectedImage.name);
-                const presignedUrl = url_response.presigned_url.replace("minio:9000", "34.172.224.168:80");
+                const presignedUrl = url_response.presigned_url.replace("minio:9000", API_URL.slice(7) + ":80");
                 const blob_name = url_response.blob_name;
 
                 console.log('Presigned URL:', presignedUrl);
