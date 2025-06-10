@@ -7,12 +7,25 @@ function SignUp() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleSignUp = async (e) => {
         e.preventDefault();
+
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters long');
+            return;
+        }
+        
+        if (password !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
+
         try {
             await authService.register(username, email, password, dateOfBirth);
             navigate('/');
@@ -72,6 +85,15 @@ function SignUp() {
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        label="Confirm Password"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                     {error && (
                         <Typography color="error" sx={{ mt: 1 }}>
