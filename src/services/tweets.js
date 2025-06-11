@@ -38,6 +38,32 @@ const createTweet = async (content, blob_name) => {
     }
 };
 
+const createTweetReply = async (content, parent_tweet_id, blob_name) => {
+    try {
+        const tweetData = {
+            tweet_content: content,
+            tweet_id: parent_tweet_id,
+            likes: [],
+            hashtags: extractHashtags(content),
+            mentions: extractMentions(content),
+            media_url: blob_name ? blob_name : null
+        };
+        const response = await axiosInstance.post('/tweets/' + parent_tweet_id + '/replies', tweetData);
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
+
+const getTweetReplies = async (tweet_id) => {
+    try {
+        const response = await axiosInstance.get('/tweets/' + tweet_id + '/replies');
+        return response.data.tweets;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
+
 // Helper function to extract hashtags from tweet content
 const extractHashtags = (content) => {
     const hashtagRegex = /#(\w+)/g;
@@ -55,6 +81,16 @@ const extractMentions = (content) => {
 const getTweets = async () => {
     try {
         const response = await axiosInstance.get('/tweets/');
+        return response.data.tweets;
+    } catch (error) {
+        console.error('Error fetching tweets:', error);
+        throw error.response.data;
+    }
+};
+
+const getTweetById = async (tweetId) => {
+    try {
+        const response = await axiosInstance.get('/tweets/' + tweetId);
         return response.data.tweets;
     } catch (error) {
         console.error('Error fetching tweets:', error);
@@ -94,7 +130,10 @@ const tweetService = {
     getTweets,
     likeTweet,
     unlikeTweet,
-    getTweetsOfUser
+    getTweetsOfUser,
+    getTweetById,
+    createTweetReply,
+    getTweetReplies
 };
 
 export default tweetService;
