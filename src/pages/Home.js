@@ -107,6 +107,7 @@ function Home() {
             }
             loadTweets();
         } catch (error) {
+            console.error('Error creating tweet:', error);
             setError('Failed to create tweet');
         }
     };
