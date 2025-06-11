@@ -27,6 +27,7 @@ const register = async (username, email, password, dateOfBirth) => {
 
 const login = async (email_address, password) => {
     try {
+        console.log("THE API URL IS:", API_URL);
         const response = await axios.post(`${API_URL}/users/login/?email_address=${encodeURIComponent(email_address)}&password=${encodeURIComponent(password)}`);
         
         if (response.data.jwt_token) {
