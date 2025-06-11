@@ -48,6 +48,10 @@ function TweetCard({ tweet }) {
         fetchData();
     }, [tweet.user_id, currentUser?.sub, tweet.likes]);
 
+    const handleCardClick = () => {
+        navigate(`/tweet/${tweet._id['$oid']}`);
+    };
+
     const handleLikeClick = async (e) => {
         e.stopPropagation(); // Prevent card click event
         try {
@@ -70,7 +74,7 @@ function TweetCard({ tweet }) {
 
     return (
         <Card sx={{ mb: 2, '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.02)' } }}>
-            <CardActionArea>
+            <CardActionArea onClick={handleCardClick}>
                 <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                         <Avatar
