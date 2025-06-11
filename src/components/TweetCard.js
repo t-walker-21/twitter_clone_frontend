@@ -9,9 +9,10 @@ import {
     CardActionArea,
     IconButton,
     Tooltip,
-    CardMedia // Add this import
+    CardMedia
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
+import CommentIcon from '@mui/icons-material/Comment';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +28,7 @@ function TweetCard({ tweet }) {
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(tweet.likes?.length || 0);
     const [profilePicUrl, setProfilePicUrl] = useState('');
+    const [tweetCommentsLength, setTweetCommentsLength] = useState(0);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -45,7 +47,17 @@ function TweetCard({ tweet }) {
             }
         };
 
+        const fetchCommentsCount = async () => {
+            try {
+                const comments = await tweetService.getTweetReplies(tweet._id['$oid']);
+                setTweetCommentsLength(comments.length);
+            } catch (error) {
+                console.error('Error fetching comments:', error);
+            }
+        }
+
         fetchData();
+        fetchCommentsCount();
     }, [tweet.user_id, currentUser?.sub, tweet.likes]);
 
     const handleCardClick = () => {
@@ -105,18 +117,6 @@ function TweetCard({ tweet }) {
                                 >
                                     @{tweet.username}
                                 </Link>
-                                <Tooltip title={isLiked ? "Unlike" : "Like"}>
-                                    <IconButton
-                                        onClick={handleLikeClick}
-                                        size="small"
-                                        color="primary"
-                                    >
-                                        {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                                        <Typography variant="caption" sx={{ ml: 0.5 }}>
-                                            {likesCount}
-                                        </Typography>
-                                    </IconButton>
-                                </Tooltip>
                             </Box>
                             <Typography variant="body1">
                                 {tweet.tweet_content.split(/(\s+)/).map((word, index) => 
@@ -144,6 +144,25 @@ function TweetCard({ tweet }) {
                                     />
                                 </Box>
                             )}
+
+                            <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                                <IconButton
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleLikeClick(e);
+                                    }}
+                                    sx={{ color: isLiked ? 'error.main' : 'inherit' }}
+                                >
+                                    {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                                </IconButton>
+                                <Typography variant="body2" sx={{ mr: 2 }}>
+                                    {likesCount}
+                                </Typography>
+                                <CommentIcon sx={{ ml: 2, color: 'text.secondary' }} />
+                                <Typography variant="body2" sx={{ ml: 1 }}>
+                                    {tweetCommentsLength}
+                                </Typography>
+                            </Box>
 
                             <Typography variant="caption" color="text.secondary">
                                 {new Date(tweet.created_at['$date']).toLocaleString()}
