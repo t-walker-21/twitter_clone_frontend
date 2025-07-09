@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Box,
     Container,
@@ -19,14 +19,15 @@ import authService from '../services/auth';
 import userService from '../services/users';
 import TweetCard from '../components/TweetCard';
 
-const API_URL = process.env.REACT_APP_API_URL;
-
 function Home() {
     const [tweets, setTweets] = useState([]);
     const [newTweet, setNewTweet] = useState('');
     const [error, setError] = useState('');
+    const [cursorPosition, setCursorPosition] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
-    const fileInputRef = React.useRef(null);
+    const [loading, setLoading] = useState(false);
+    const fileInputRef = useRef(null);
+    const cursorRef = useRef(cursorPosition); // Ref to store the latest cursor position
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -35,23 +36,33 @@ function Home() {
             navigate('/login');
             return;
         }
+
         loadTweets();
-        
-        //setInterval(() => {
-            //loadTweets();
-       // }, 5000); // Refresh tweets every 5 seconds
-        
-    }, [navigate]);
+        window.addEventListener('scroll', handleScroll);
+    }, []);
 
     const loadTweets = async () => {
+        if (loading) return; // Prevent multiple simultaneous calls
+        setLoading(true);
+
         try {
-            const data = await tweetService.getTweets();
+            const data = await tweetService.getTweets(cursorRef.current); // Use the ref for the latest cursor
 
             console.log('Fetched tweets:', data);
-            setTweets(data);
+            setTweets((prevTweets) => [...prevTweets, ...data]);
+
+            // Update cursor position for pagination
+            if (data.length > 0) {
+                const lastTweet = data[data.length - 1];
+                const latestTweetIsoString = new Date(lastTweet.created_at['$date']).toISOString();
+                cursorRef.current = latestTweetIsoString;
+                console.log('New cursor position:', latestTweetIsoString);
+            }
         } catch (error) {
             setError('Failed to load tweets');
             console.log('Error loading tweets:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -69,6 +80,19 @@ function Home() {
         }
     };
 
+    const handleScroll = () => {
+        if (loading) return; // Prevent multiple simultaneous calls
+
+        const scrollTop = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+
+        // Check if the user has scrolled to the bottom
+        if (scrollTop + windowHeight >= documentHeight - 10) {
+            loadTweets(); // Trigger loading more tweets
+        }
+    };
+
     const handleNewTweet = async (e) => {
         e.preventDefault();
         if (!newTweet.trim() && !selectedImage) return;
@@ -77,7 +101,7 @@ function Home() {
             // Get a presigned URL for the image if selected
             if (selectedImage) {
                 const url_response = await userService.get_presigned_url(selectedImage.name);
-                const presignedUrl = url_response.presigned_url.replace("minio:9000", API_URL.slice(7) + ":80");
+                const presignedUrl = url_response.presigned_url.replace("minio:9000", "34.172.224.168:80");
                 const blob_name = url_response.blob_name;
 
                 console.log('Presigned URL:', presignedUrl);
@@ -107,7 +131,6 @@ function Home() {
             }
             loadTweets();
         } catch (error) {
-            console.error('Error creating tweet:', error);
             setError('Failed to create tweet');
         }
     };
@@ -187,6 +210,9 @@ function Home() {
                         )}
                     </Box>
 
+                    
+
+
                     <Button
                         type="submit"
                         variant="contained"
@@ -231,6 +257,7 @@ function Home() {
                         <TweetCard key={tweet.id} tweet={tweet} />
                     ))
                 )}
+                {loading && <Typography>Loading...</Typography>}
             </Container>
         </Box>
     );
