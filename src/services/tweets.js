@@ -78,9 +78,11 @@ const extractMentions = (content) => {
     return matches ? matches.map(mention => mention.slice(1)) : [];
 };
 
-const getTweets = async () => {
+const getTweets = async (cursor) => {
     try {
-        const response = await axiosInstance.get('/tweets/');
+        // If cursor is provided, append it to the request
+        const url = cursor ? `/tweets/?cursor=${cursor}` : '/tweets/';
+        const response = await axiosInstance.get(url);
         return response.data.tweets;
     } catch (error) {
         console.error('Error fetching tweets:', error);
