@@ -38,12 +38,14 @@ function Home() {
         }
 
         loadTweets();
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', debounce(handleScroll, 100));
     }, []);
 
     const loadTweets = async () => {
         if (loading) return; // Prevent multiple simultaneous calls
         setLoading(true);
+
+        console.log('Loading tweets with cursor:', cursorRef.current);
 
         try {
             const data = await tweetService.getTweets(cursorRef.current); // Use the ref for the latest cursor
@@ -80,6 +82,20 @@ function Home() {
         }
     };
 
+    const debounce = (func, delay) => {
+      
+      let timeoutId;
+      
+      return function (...args) {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(() => {
+          func(...args);
+        }, delay);
+      };
+    }
+
     const handleScroll = () => {
         if (loading) return; // Prevent multiple simultaneous calls
 
@@ -88,7 +104,7 @@ function Home() {
         const documentHeight = document.documentElement.scrollHeight;
 
         // Check if the user has scrolled to the bottom
-        if (scrollTop + windowHeight >= documentHeight - 10) {
+        if (scrollTop + windowHeight >= documentHeight - 500) {
             loadTweets(); // Trigger loading more tweets
         }
     };
@@ -257,7 +273,7 @@ function Home() {
                         <TweetCard key={tweet.id} tweet={tweet} />
                     ))
                 )}
-                {loading && <Typography>Loading...</Typography>}
+                    {loading && <Typography>Loading...</Typography>}
             </Container>
         </Box>
     );
