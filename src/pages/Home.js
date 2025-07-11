@@ -18,6 +18,7 @@ import tweetService from '../services/tweets';
 import authService from '../services/auth';
 import userService from '../services/users';
 import TweetCard from '../components/TweetCard';
+import TweetCardSkeleton from '../components/TweetCardSkeleton';
 
 function Home() {
     const [tweets, setTweets] = useState([]);
@@ -26,6 +27,7 @@ function Home() {
     const [cursorPosition, setCursorPosition] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
     const [loading, setLoading] = useState(false);
+    const isLoadingRef = useRef(false);
     const fileInputRef = useRef(null);
     const cursorRef = useRef(cursorPosition); // Ref to store the latest cursor position
     const navigate = useNavigate();
@@ -37,13 +39,18 @@ function Home() {
             return;
         }
 
+        setLoading(true);
         loadTweets();
-        window.addEventListener('scroll', debounce(handleScroll, 100));
+        window.addEventListener('scroll', () => {
+            //debounce(handleScroll, 300);
+            handleScroll();
+        });
     }, []);
 
     const loadTweets = async () => {
-        if (loading) return; // Prevent multiple simultaneous calls
-        setLoading(true);
+        console.log(isLoadingRef.current, 'isLoadingRef');
+        if (isLoadingRef.current) return; // Prevent multiple simultaneous calls
+        isLoadingRef.current = true;
 
         console.log('Loading tweets with cursor:', cursorRef.current);
 
@@ -65,6 +72,8 @@ function Home() {
             console.log('Error loading tweets:', error);
         } finally {
             setLoading(false);
+            isLoadingRef.current = false;
+            console.log(isLoadingRef.current, 'isLoadingRef');
         }
     };
 
@@ -83,7 +92,6 @@ function Home() {
     };
 
     const debounce = (func, delay) => {
-      
       let timeoutId;
       
       return function (...args) {
@@ -97,14 +105,15 @@ function Home() {
     }
 
     const handleScroll = () => {
-        if (loading) return; // Prevent multiple simultaneous calls
 
         const scrollTop = window.scrollY;
         const windowHeight = window.innerHeight;
         const documentHeight = document.documentElement.scrollHeight;
 
         // Check if the user has scrolled to the bottom
-        if (scrollTop + windowHeight >= documentHeight - 500) {
+        if (scrollTop + windowHeight >= documentHeight - 100) {
+            console.log('Reached the bottom of the page');
+            setLoading(true);
             loadTweets(); // Trigger loading more tweets
         }
     };
@@ -246,34 +255,42 @@ function Home() {
                 )}
 
                 {tweets.length === 0 ? (
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            mt: 4,
-                        }}
-                    >
-                        <FeedIcon
-                            sx={{
-                                fontSize: 60,
-                                color: 'text.secondary',
-                                mb: 2,
-                            }}
-                        />
-                        <Typography variant="h6" color="text.secondary">
-                            No tweets yet
-                        </Typography>
-                        <Typography color="text.secondary">
-                            Be the first one to tweet!
-                        </Typography>
-                    </Box>
+                    // <Box
+                    //     sx={{
+                    //         display: 'flex',
+                    //         flexDirection: 'column',
+                    //         alignItems: 'center',
+                    //         mt: 4,
+                    //     }}
+                    // >
+                    //     <FeedIcon
+                    //         sx={{
+                    //             fontSize: 60,
+                    //             color: 'text.secondary',
+                    //             mb: 2,
+                    //         }}
+                    //     />
+                    //     <Typography variant="h6" color="text.secondary">
+                    //         No tweets yet
+                    //     </Typography>
+                    //     <Typography color="text.secondary">
+                    //         Be the first one to tweet!
+                    //     </Typography>
+                    // </Box>
+                    <></>
                 ) : (
                     tweets.map((tweet) => (
                         <TweetCard key={tweet.id} tweet={tweet} />
                     ))
                 )}
-                    {loading && <Typography>Loading...</Typography>}
+            {loading && (
+                <Box>
+                    <TweetCardSkeleton />
+                    <TweetCardSkeleton />
+                    <TweetCardSkeleton />
+                    <TweetCardSkeleton />
+                </Box>
+            )}
             </Container>
         </Box>
     );
