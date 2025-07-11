@@ -80,6 +80,7 @@ const extractMentions = (content) => {
 
 const getTweets = async (cursor) => {
     try {
+        await new Promise(resolve => setTimeout(resolve, 1000));
         // If cursor is provided, append it to the request
         const url = cursor ? `/tweets/?cursor=${cursor}` : '/tweets/';
         const response = await axiosInstance.get(url);
